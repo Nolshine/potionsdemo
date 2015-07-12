@@ -74,7 +74,11 @@ def main(): # The main program
 	dragging = False
 	dragCounter = 0
 	while running: #main loop
-		clock.tick(60)
+		time_passed = clock.tick(60)
+
+		#game logic here.
+		if thickness > 0:
+			thickness -= 0.25
 
 		#event processing code here.
 		for event in pygame.event.get():
@@ -82,14 +86,18 @@ def main(): # The main program
 				running = False
 			if event.type == KEYDOWN and event.key == K_ESCAPE:
 				running = False
-			if event.type == MOUSEBUTTONDOWN:
+			if event.type == MOUSEBUTTONDOWN and event.button == 1:
 				holding = True
-				mousepos = pygame.mouse.get_pos()
+				mousepos = event.pos
 				if inventoryButton.collidepoint(mousepos):
 					print "Clicked in inventory!"
 				elif cauldronButton.collidepoint(mousepos):
+					if thickness < 100:
+						thickness += 5
+					if thickness > 100:
+						thickness = 100
 					print "Clicked on cauldron!"
-			if event.type == MOUSEBUTTONUP:
+			if event.type == MOUSEBUTTONUP and event.button == 1:
 				holding = False
 
 		if holding:

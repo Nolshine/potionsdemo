@@ -10,6 +10,8 @@ from pygame import *
 
 pygame.init() #initialize pygame here so i can use the modules in classes and functions
 
+#######################################################################
+
 class Ingredient:	#class to represent ingredients
 
 	def __init__(self):
@@ -34,6 +36,14 @@ class Text:
 	def new_label(self, text): #for rendering text on the fly
 		return self.font.render(text, 1, (0, 0, 0))
 
+#######################################################################
+
+def drag():
+	print "dragging!"
+
+def drop():
+	print "dropped!"
+
 def main(): # The main program
 
 	SCREEN_RES = (640, 480)
@@ -43,9 +53,12 @@ def main(): # The main program
 	# let's say 4 ingredients so a 4 button menu
 	# each button.. 64x64 in size, including border?
 	inventory = pygame.Surface.subsurface(screen, (0, 0, 64*4, 64)) #subsurface to blit inventory on
+	inventoryButton = inventory.get_rect() #rect to detect clicking in
 	statsText = pygame.Surface.subsurface(screen, (30, SCREEN_RES[1]/2, 80, 53)) #subsurfaces to blit stats on
 	statsData = pygame.Surface.subsurface(screen, (110, SCREEN_RES[1]/2, 50, 53)) #subsurfaces to blit stats on
 	cauldron = pygame.image.load("img/cauldron.png")
+	cauldronButton = pygame.Rect((((SCREEN_RES[0]/2)-128), ((SCREEN_RES[1]/2)-128)), cauldron.get_size())
+
 	#text manager
 	textManager = Text()
 
@@ -57,20 +70,46 @@ def main(): # The main program
 	flavour = [0, 0, 0] #will probably be updated continuously
 
 	running = True
+	holding = False
+	dragging = False
+	dragCounter = 0
 	while running: #main loop
 		clock.tick(60)
 
+		#event processing code here.
 		for event in pygame.event.get():
 			if event.type == QUIT:
 				running = False
 			if event.type == KEYDOWN and event.key == K_ESCAPE:
 				running = False
+			if event.type == MOUSEBUTTONDOWN:
+				holding = True
+				mousepos = pygame.mouse.get_pos()
+				if inventoryButton.collidepoint(mousepos):
+					print "Clicked in inventory!"
+				elif cauldronButton.collidepoint(mousepos):
+					print "Clicked on cauldron!"
+			if event.type == MOUSEBUTTONUP:
+				holding = False
+
+		if holding:
+			dragCounter += 1
+		else:
+			if dragging:
+				drop()
+			dragCounter = 0
+			dragging = False
+
+		if dragCounter >= 10 and not dragging:
+			dragging = True
+			drag()
+
 
 		#render code here
 		#fill the screen with white
 		screen.fill((255,255,255))
 		#blit the cauldron sprite (ewww..)
-		screen.blit(cauldron, (((SCREEN_RES[0]/2)-128), ((SCREEN_RES[1]/2)-128)))
+		screen.blit(cauldron, cauldronButton)
 
 		# make the ingredient menu appear
 		for i in range(len(ingredients)):
